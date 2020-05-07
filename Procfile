@@ -1,1 +1,1 @@
-worker: node carousell.js
+web: node carousell.js

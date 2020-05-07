@@ -23,11 +23,22 @@
   },
   "env": {
     "PAGE": {
-      "description": "Carousell Page to monitor"
+      "description": "Carousell Page URL to monitor."
     },
-    "RESELLERS": "",
-    "BOT_TOKEN": "",
-    "BOT_CHATID": "",
-    "SLEEP_TIME": "*/1 * * * *"
+    "RESELLERS": {
+      "description": "[OPTIONAL] Seller usernames you want to filter away. Separated by a comma and space.",
+      "value": "sellername1, sellername2",
+      "required": false
+    },
+    "BOT_TOKEN": {
+      "description": "Telegram Bot Token. Take note there is a colon in between Telegram token."
+    },
+    "BOT_CHATID": {
+      "description": "Telegram Chat to receive alerts. Minus sign is part of chat_id."
+    },
+    "SLEEP_TIME": {
+      "description": "Refreshes every 1 minute. Change 1 to adjust the duration of poll. It MUST be in this format",
+      "value": "*/1 * * * *"
+    }
   }
 }

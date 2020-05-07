@@ -37,8 +37,8 @@
       "description": "Telegram Chat to receive alerts. Depending on whether you created a group or a channel, minus sign might or might not be part of chat_id."
     },
     "SLEEP_TIME": {
-      "description": "Refreshes every 1 minute. Change 1 to adjust the duration of poll. It MUST be in this format",
-      "value": "*/1 * * * *"
+      "description": "Refreshes every 5 minute. Change 5 to adjust the duration of poll. It MUST be in this format. Please poll responsibly as we do not want to flood Carousell servers!",
+      "value": "*/5 * * * *"
     }
   }
 }

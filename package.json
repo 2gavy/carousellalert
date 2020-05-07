@@ -1,0 +1,19 @@
+{
+  "name": "urljswatcher",
+  "version": "1.0.0",
+  "description": "",
+  "main": "carousell.js",
+  "dependencies": {
+    "axios": "^0.19.2",
+    "cron": "^1.8.2",
+    "dotenv": "^8.2.0",
+    "puppeteer": "^3.0.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "start": "node carousell.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}

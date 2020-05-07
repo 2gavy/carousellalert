@@ -1,0 +1,7 @@
+{
+    "name": "Automated Carousell Alerting System",
+    "description": "Check for listings, scrapes new listing automatically and alerts on Telegram",
+    "repository": "https://github.com/2gavy/carousellalert",
+    "logo": "https://storage.googleapis.com/carousell-wordpress-files/1/2019/09/Carousell-logo-square.png",
+    "keywords": ["node", "puppeteer", "static", "cron"]
+}

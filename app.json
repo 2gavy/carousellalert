@@ -20,5 +20,14 @@
     "web": {
       "quantity": 0
     }
+  },
+  "env": {
+    "PAGE": {
+      "description": "Carousell Page to monitor"
+    },
+    "RESELLERS": "",
+    "BOT_TOKEN": "",
+    "BOT_CHATID": "",
+    "SLEEP_TIME": "*/1 * * * *"
   }
 }

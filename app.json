@@ -23,7 +23,7 @@
   },
   "env": {
     "PAGE": {
-      "description": "Carousell Page URL to monitor."
+      "description": "Carousell Page URL to monitor. Search for a page, sort by Recent listings. The URL should end with descending"
     },
     "RESELLERS": {
       "description": "[OPTIONAL] Seller usernames you want to filter away. Separated by a comma and space.",

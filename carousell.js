@@ -13,7 +13,8 @@ const job = new CronJob({
         args: ["--no-sandbox"]
       });
       const page = await browser.newPage();
-      await page.goto(process.env.PAGE);
+      await page.goto("https://sg.carousell.com/search/" + encodeURIComponent(process.env.PAGE) + "?sort_by=time_created%2Cdescending");
+      await page.setCacheEnabled(false);
 
       var data = await page.evaluate(function () {
         return window.initialState;

@@ -23,7 +23,8 @@
   },
   "env": {
     "ITEM": {
-      "description": "Item (Search term) you want to monitor."
+      "description": "Item (Search term) you want to monitor.",
+      "value": "macbook"
     },
     "RESELLERS": {
       "description": "[OPTIONAL] Seller usernames you want to filter away. Separated by a comma and space.",

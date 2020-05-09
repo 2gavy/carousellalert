@@ -12,7 +12,18 @@ const job = new CronJob({
       const browser = await puppeteer.launch({
         args: ["--no-sandbox"]
       });
-      const page = await browser.newPage();
+      const context = await browser.createIncognitoBrowserContext();
+      const page = await context.newPage();
+      
+      await page.setRequestInterception(true);
+    
+      page.on('request', (req) => {
+          if(req.resourceType() == 'document')
+              req.continue();
+          else 
+            req.abort();
+      });
+
       await page.goto("https://sg.carousell.com/search/" + encodeURIComponent(process.env.ITEM) + "?sort_by=time_created%2Cdescending");
       await page.setCacheEnabled(false);
 
@@ -22,6 +33,7 @@ const job = new CronJob({
 
       let listings = [];
 
+      console.log(JSON.stringify(data))
       data.SearchListing.listingCards.forEach((element) => {
         const name = element.belowFold[0].stringContent;
         const price = element.belowFold[1].stringContent;
@@ -31,6 +43,8 @@ const job = new CronJob({
         const seller_username =
           data.Listing.listingsMap[element.listingID].seller.username;
         const itemURL = ("https://sg.carousell.com/p/" + name.replace(/[^a-zA-Z ]/g, "-") + "-" + listingID).replace(/ /g, "-");
+        const activeBump = element.aboveFold[0].hasOwnProperty('component')   //  Lightning icons - Most resellers will not have active bumps
+        const promoted = element.hasOwnProperty('promoted')   //  Purple promoted icons - Most resellers will not have spotlight
 
         listing = {
           name: name,
@@ -42,7 +56,7 @@ const job = new CronJob({
           itemURL: itemURL
         };
 
-        if (!resellers.includes(seller_username)) listings.push(listing);
+        if (!resellers.includes(seller_username) && !activeBump && !promoted) listings.push(listing);
       });
 
       var asiaTime = new Date().toLocaleString("en-US", {
@@ -66,7 +80,7 @@ const job = new CronJob({
       //  Save for comparison later
       prevListings = listings;
 
-      await browser.close();
+      // await browser.close();
     })();
   },
 });

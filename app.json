@@ -22,6 +22,12 @@
     }
   },
   "env": {
+    "BOT_TOKEN": {
+      "description": "Telegram Bot Token. Take note there is a colon in between Telegram token."
+    },
+    "BOT_CHATID": {
+      "description": "Telegram Chat to receive alerts. Depending on whether you created a group or a channel, minus sign might or might not be part of chat_id."
+    },
     "ITEM": {
       "description": "Item (Search term) you want to monitor.",
       "value": "macbook"
@@ -31,15 +37,10 @@
       "value": "sellername1, sellername2",
       "required": false
     },
-    "BOT_TOKEN": {
-      "description": "Telegram Bot Token. Take note there is a colon in between Telegram token."
-    },
-    "BOT_CHATID": {
-      "description": "Telegram Chat to receive alerts. Depending on whether you created a group or a channel, minus sign might or might not be part of chat_id."
-    },
     "SLEEP_TIME": {
       "description": "Refreshes every 5 minute. Change 5 to adjust the duration of poll. It MUST be in this format. Please poll responsibly as we do not want to flood Carousell servers!",
       "value": "*/5 * * * *"
     }
+
   }
 }

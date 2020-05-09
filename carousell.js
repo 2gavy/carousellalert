@@ -33,7 +33,6 @@ const job = new CronJob({
 
       let listings = [];
 
-      console.log(JSON.stringify(data))
       data.SearchListing.listingCards.forEach((element) => {
         const name = element.belowFold[0].stringContent;
         const price = element.belowFold[1].stringContent;
@@ -43,8 +42,8 @@ const job = new CronJob({
         const seller_username =
           data.Listing.listingsMap[element.listingID].seller.username;
         const itemURL = ("https://sg.carousell.com/p/" + name.replace(/[^a-zA-Z ]/g, "-") + "-" + listingID).replace(/ /g, "-");
-        const activeBump = element.aboveFold[0].hasOwnProperty('component')   //  Lightning icons - Most resellers will not have active bumps
-        const promoted = element.hasOwnProperty('promoted')   //  Purple promoted icons - Most resellers will not have spotlight
+        const isBumper = element.aboveFold[0].component === "active_bump"  //  Lightning icons - Most resellers will not have active bumps
+        const isSpotlighter = element.hasOwnProperty('promoted')   //  Purple promoted icons - Most resellers will not have spotlight
 
         listing = {
           name: name,
@@ -55,8 +54,13 @@ const job = new CronJob({
           seller_username: seller_username,
           itemURL: itemURL
         };
-
-        if (!resellers.includes(seller_username) && !activeBump && !promoted) listings.push(listing);
+        
+        if(isBumper || isSpotlighter)
+          console.log("Excluding bumper and spotlighter: " + seller_username)
+        else {
+          if(!resellers.includes(seller_username))
+            listings.push(listing)
+        }
       });
 
       var asiaTime = new Date().toLocaleString("en-US", {
@@ -80,7 +84,7 @@ const job = new CronJob({
       //  Save for comparison later
       prevListings = listings;
 
-      // await browser.close();
+      await browser.close();
     })();
   },
 });

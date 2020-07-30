@@ -1,93 +1,89 @@
 require("dotenv").config();
+const puppeteer = require("puppeteer");
+
 let prevListings = [];
 const resellers = process.env.RESELLERS.split(", ");
+let context;
 
 const CronJob = require("cron").CronJob;
 const job = new CronJob({
   cronTime: process.env.SLEEP_TIME,
-  onTick: function () {
-    const puppeteer = require("puppeteer");
-
-    (async () => {
-      const browser = await puppeteer.launch({
-        args: ["--no-sandbox"]
-      });
-      const context = await browser.createIncognitoBrowserContext();
-      const page = await context.newPage();
-      
-      await page.setRequestInterception(true);
-    
-      page.on('request', (req) => {
-          if(req.resourceType() == 'document')
-              req.continue();
-          else 
-            req.abort();
-      });
-
-      await page.goto("https://sg.carousell.com/search/" + encodeURIComponent(process.env.ITEM) + "?sort_by=time_created%2Cdescending");
-      await page.setCacheEnabled(false);
-
-      var data = await page.evaluate(function () {
-        return window.initialState;
-      });
-
-      let listings = [];
-
-      data.SearchListing.listingCards.forEach((element) => {
-        const name = element.belowFold[0].stringContent;
-        const price = element.belowFold[1].stringContent;
-        const condition = element.belowFold[3].stringContent;
-        const listingID = element.listingID;
-        const thumbnailURL = element.thumbnailURL;
-        const seller_username =
-          data.Listing.listingsMap[element.listingID].seller.username;
-        const itemURL = ("https://sg.carousell.com/p/" + name.replace(/[^a-zA-Z ]/g, "-") + "-" + listingID).replace(/ /g, "-");
-        const isBumper = element.aboveFold[0].component === "active_bump"  //  Lightning icons - Most resellers will not have active bumps
-        const isSpotlighter = element.hasOwnProperty('promoted')   //  Purple promoted icons - Most resellers will not have spotlight
-
-        listing = {
-          name: name,
-          price: price,
-          condition: condition,
-          listingID: listingID,
-          thumbnailURL: thumbnailURL,
-          seller_username: seller_username,
-          itemURL: itemURL
-        };
-        
-        if(isBumper || isSpotlighter)
-          console.log("Excluding bumper and spotlighter: " + seller_username)
-        else {
-          if(!resellers.includes(seller_username))
-            listings.push(listing)
-        }
-      });
-
-      var asiaTime = new Date().toLocaleString("en-US", {
-        timeZone: "Asia/Shanghai",
-      });
-      dateTime = new Date(asiaTime);
-
-      if (prevListings.length == 0)
-        console.log("Script starting... we populate the listings!");
-      else {
-        diffListings = compareListings(prevListings, listings);
-        if (diffListings.length == 0)
-          console.log(dateTime + "\t There is no update... :(");
-        else {
-          console.log(dateTime + "\t There is an update!! :)");
-          messages = createListingsStr(diffListings);
-          telegram_bot_sendtext(messages);
-        }
-      }
-
-      //  Save for comparison later
-      prevListings = listings;
-
-      await browser.close();
-    })();
-  },
+  onTick: loadPage,
 });
+
+async function loadPage(){
+  var link = "https://sg.carousell.com/search/" + encodeURIComponent(process.env.ITEM) + "?sort_by=time_created%2Cdescending"
+  var page = await context.newPage();
+  await page.setUserAgent(
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3419.0 Safari/537.36"
+  );
+  await page.setCacheEnabled(false);
+
+  await page.setRequestInterception(true);
+
+  page.on("request", (req) => {
+    if (req.resourceType() == "document") req.continue();
+    else req.abort();
+  });
+  await page.goto(link, { waitUntil: "load", timeout: 0 });
+  var data = await page.evaluate(function () {
+    return window.initialState;
+  });
+  await page.close();
+
+  let listings = [];
+
+  data.SearchListing.listingCards.forEach((element) => {
+    const name = element.belowFold[0].stringContent;
+    const price = element.belowFold[1].stringContent;
+    const condition = element.belowFold[3].stringContent;
+    const listingID = element.listingID;
+    const thumbnailURL = element.thumbnailURL;
+    const seller_username =
+      data.Listing.listingsMap[element.listingID].seller.username;
+    const itemURL = ("https://sg.carousell.com/p/" + name.replace(/[^a-zA-Z ]/g, "-") + "-" + listingID).replace(/ /g, "-");
+    const isBumper = element.aboveFold[0].component === "active_bump"  //  Lightning icons - Most resellers will not have active bumps
+    const isSpotlighter = element.hasOwnProperty('promoted')   //  Purple promoted icons - Most resellers will not have spotlight
+
+    listing = {
+      name: name,
+      price: price,
+      condition: condition,
+      listingID: listingID,
+      thumbnailURL: thumbnailURL,
+      seller_username: seller_username,
+      itemURL: itemURL
+    };
+    
+    if(isBumper || isSpotlighter)
+      console.log("Excluding bumper and spotlighter: " + seller_username)
+    else {
+      if(!resellers.includes(seller_username))
+        listings.push(listing)
+    }
+  });
+
+  var asiaTime = new Date().toLocaleString("en-US", {
+    timeZone: "Asia/Shanghai",
+  });
+  dateTime = new Date(asiaTime);
+
+  if (prevListings.length == 0)
+    console.log("Script starting... we populate the listings!");
+  else {
+    diffListings = compareListings(prevListings, listings);
+    if (diffListings.length == 0)
+      console.log(dateTime + "\t There is no update... :(");
+    else {
+      console.log(dateTime + "\t There is an update!! :)");
+      messages = createListingsStr(diffListings);
+      telegram_bot_sendtext(messages);
+    }
+  }
+
+  //  Save for comparison later
+  prevListings = listings;
+}
 
 job.start();
 
@@ -149,3 +145,15 @@ function createListingsStr(listings) {
 
   return splitMessages;
 }
+
+
+async function createBrowser(cb) {
+  const browser = await puppeteer.launch({
+    headless: true,
+    args: ["--no-sandbox", "--incognito"],
+  });
+  context = await browser.createIncognitoBrowserContext();
+  cb()
+}
+
+createBrowser(loadPage);
